@@ -1,0 +1,24 @@
+# Fichiers locaux macOS et Xcode.
+.DS_Store
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+
+# Compilation, tests et archives de distribution.
+DerivedData/
+build/
+.build/
+*.xcresult
+*.xcarchive
+*.ipa
+*.dSYM/
+
+# Configuration locale et signature.
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.mobileprovision
+*.provisionprofile
