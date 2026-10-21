@@ -1,5 +1,7 @@
 # Validation du 20 octobre 2026
 
+**Complément du 21 octobre :** le [bilan du pliage dans Device Hub](Validation-pliage-2026-10-21.md) documente les transitions réelles fermé/ouvert et la position intermédiaire. Les résultats ci-dessous restent ceux du passage initial.
+
 **Résultat Xcode : 19 tests réussis, 0 échec, 1 test ignoré explicitement.** Le bilan brut est conservé dans `Resultats-tests.json`.
 
 ## Environnement réellement utilisé
@@ -27,7 +29,7 @@ Les tests n’envoient aucun fichier à un tiers. Leur bibliothèque séparée n
 
 Un cinquième parcours UI demande une rotation, vérifie que la note reste affichée et attend un changement réel des dimensions de la fenêtre. Sur ce runtime Duo, la commande `XCUIDevice.orientation` laisse la fenêtre à 466 × 678 points. Le test est donc explicitement marqué **ignoré**, avec sa raison, au lieu d’annoncer une continuité de format vérifiée.
 
-L’application utilise `ArrangementView` et recalcule ses coordonnées à partir des dimensions disponibles. Les calculs de redimensionnement sont couverts par les tests unitaires. **Le passage entre toutes les poses physiques du Duo reste à vérifier dans Device Hub**, puis sur un appareil réel.
+L’application utilise `ArrangementView` et recalcule ses coordonnées à partir des dimensions disponibles. Les calculs de redimensionnement sont couverts par les tests unitaires. Au terme de ce passage du 20 octobre, **les changements de pose dans Device Hub restaient à vérifier**. Le complément du 21 octobre traite ce point ; la vérification sur appareil physique reste à faire.
 
 Pour cette vérification : ouvrir une comparaison, ajouter un repère sur un détail identifiable, changer la pose dans Device Hub, puis vérifier que le repère reste attaché au même détail, que les deux images restent accessibles et que les commandes ne passent pas sous la séparation de l’écran.
 

@@ -1,0 +1,950 @@
+{
+  "date": "2026-10-21",
+  "source": "XCTest — cycle-03.xcresult",
+  "referenceCommit": "cf1ef3613bf52baeec364f92cbdae5b572b21631",
+  "tolerancePoints": 2,
+  "maximumErrorPoints": 0.22567954220318143,
+  "stages": [
+    {
+      "anchors": [
+        {
+          "deltaX": 0,
+          "deltaY": 0,
+          "image": "comparisonImage-before",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 621.3333333333333,
+            "width": 466,
+            "x": 0,
+            "y": 28.333333333333332
+          },
+          "pin": "annotationPin-0",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32.00000000000003,
+            "x": 170.33333333333331,
+            "y": 268.66666666666663
+          },
+          "pinHittable": true,
+          "referenceX": 0.39985693848354786,
+          "referenceY": 0.41255364806866957,
+          "text": "A : la courbe de l’escalier reste mon repère."
+        },
+        {
+          "deltaX": 0,
+          "deltaY": 0,
+          "image": "comparisonImage-after",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 621.3333333333333,
+            "width": 466,
+            "x": 0,
+            "y": 28.333333333333332
+          },
+          "pin": "annotationPin-1",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 263.66666666666663,
+            "y": 377.3333333333333
+          },
+          "pinHittable": true,
+          "referenceX": 0.600143061516452,
+          "referenceY": 0.5874463519313305,
+          "text": "B : la lumière chaude reste attachée à l’image."
+        }
+      ],
+      "canvas": {
+        "height": 678,
+        "width": 466,
+        "x": 0,
+        "y": 0
+      },
+      "controls": [
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 96.66666666666669,
+            "x": 78.66666666666666,
+            "y": 582
+          },
+          "hittable": true,
+          "identifier": "comparisonMode",
+          "label": "Auto"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 50,
+            "x": 187.33333333333334,
+            "y": 582
+          },
+          "hittable": true,
+          "identifier": "addAnnotation",
+          "label": "Ajouter une annotation"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 53.99999999999997,
+            "x": 249.33333333333334,
+            "y": 582
+          },
+          "hittable": true,
+          "identifier": "zoomComparison",
+          "label": "Zoom 1,0 fois. Réinitialiser ou agrandir."
+        }
+      ],
+      "date": "2026-10-21T14:09:53Z",
+      "stage": "00_CLOSED",
+      "window": {
+        "height": 678,
+        "width": 466,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "anchors": [
+        {
+          "deltaX": -0.19861707200760748,
+          "deltaY": -0.22567954220318143,
+          "image": "comparisonImage-before",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 634,
+            "width": 475.6666666666667,
+            "x": 0,
+            "y": 17.666666666666607
+          },
+          "pin": "annotationPin-0",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 174,
+            "y": 262.99999999999994
+          },
+          "pinHittable": true,
+          "referenceX": 0.39985693848354786,
+          "referenceY": 0.41255364806866957,
+          "text": "A : la courbe de l’escalier reste mon repère."
+        },
+        {
+          "deltaX": 0.06533142584646612,
+          "deltaY": -0.10765379113024665,
+          "image": "comparisonImage-after",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 634,
+            "width": 475.3333333333333,
+            "x": 475.6666666666667,
+            "y": 17.666666666666607
+          },
+          "pin": "annotationPin-1",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 745,
+            "y": 373.99999999999994
+          },
+          "pinHittable": true,
+          "referenceX": 0.600143061516452,
+          "referenceY": 0.5874463519313305,
+          "text": "B : la lumière chaude reste attachée à l’image."
+        }
+      ],
+      "canvas": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      },
+      "controls": [
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 99.33333333333326,
+            "x": 536.6666666666667,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "comparisonMode",
+          "label": "Auto"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 50,
+            "x": 648,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "addAnnotation",
+          "label": "Ajouter une annotation"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 54,
+            "x": 710,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "zoomComparison",
+          "label": "Zoom 1,0 fois. Réinitialiser ou agrandir."
+        }
+      ],
+      "date": "2026-10-21T14:10:11Z",
+      "stage": "01_OPEN",
+      "window": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      }
+    },
+    {
+      "anchors": [
+        {
+          "deltaX": 0,
+          "deltaY": 0,
+          "image": "comparisonImage-before",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 621.3333333333333,
+            "width": 466,
+            "x": 0,
+            "y": 28.333333333333332
+          },
+          "pin": "annotationPin-0",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32.00000000000003,
+            "x": 170.33333333333331,
+            "y": 268.66666666666663
+          },
+          "pinHittable": true,
+          "referenceX": 0.39985693848354786,
+          "referenceY": 0.41255364806866957,
+          "text": "A : la courbe de l’escalier reste mon repère."
+        },
+        {
+          "deltaX": 0,
+          "deltaY": 0,
+          "image": "comparisonImage-after",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 621.3333333333333,
+            "width": 466,
+            "x": 0,
+            "y": 28.333333333333332
+          },
+          "pin": "annotationPin-1",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 263.66666666666663,
+            "y": 377.3333333333333
+          },
+          "pinHittable": true,
+          "referenceX": 0.600143061516452,
+          "referenceY": 0.5874463519313305,
+          "text": "B : la lumière chaude reste attachée à l’image."
+        }
+      ],
+      "canvas": {
+        "height": 678,
+        "width": 466,
+        "x": 0,
+        "y": 0
+      },
+      "controls": [
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 96.66666666666669,
+            "x": 78.66666666666666,
+            "y": 582
+          },
+          "hittable": true,
+          "identifier": "comparisonMode",
+          "label": "Auto"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 50,
+            "x": 187.33333333333334,
+            "y": 582
+          },
+          "hittable": true,
+          "identifier": "addAnnotation",
+          "label": "Ajouter une annotation"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 53.99999999999997,
+            "x": 249.33333333333334,
+            "y": 582
+          },
+          "hittable": true,
+          "identifier": "zoomComparison",
+          "label": "Zoom 1,0 fois. Réinitialiser ou agrandir."
+        }
+      ],
+      "date": "2026-10-21T14:10:42Z",
+      "stage": "02_CLOSED_AGAIN",
+      "window": {
+        "height": 678,
+        "width": 466,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "anchors": [
+        {
+          "deltaX": -0.19861707200760748,
+          "deltaY": -0.22567954220318143,
+          "image": "comparisonImage-before",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 634,
+            "width": 475.6666666666667,
+            "x": 0,
+            "y": 17.666666666666607
+          },
+          "pin": "annotationPin-0",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 174,
+            "y": 262.99999999999994
+          },
+          "pinHittable": true,
+          "referenceX": 0.39985693848354786,
+          "referenceY": 0.41255364806866957,
+          "text": "A : la courbe de l’escalier reste mon repère."
+        },
+        {
+          "deltaX": 0.06533142584646612,
+          "deltaY": -0.10765379113024665,
+          "image": "comparisonImage-after",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 634,
+            "width": 475.3333333333333,
+            "x": 475.6666666666667,
+            "y": 17.666666666666607
+          },
+          "pin": "annotationPin-1",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 745,
+            "y": 373.99999999999994
+          },
+          "pinHittable": true,
+          "referenceX": 0.600143061516452,
+          "referenceY": 0.5874463519313305,
+          "text": "B : la lumière chaude reste attachée à l’image."
+        }
+      ],
+      "canvas": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      },
+      "controls": [
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 99.33333333333326,
+            "x": 536.6666666666667,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "comparisonMode",
+          "label": "Auto"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 50,
+            "x": 648,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "addAnnotation",
+          "label": "Ajouter une annotation"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 54,
+            "x": 710,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "zoomComparison",
+          "label": "Zoom 1,0 fois. Réinitialiser ou agrandir."
+        }
+      ],
+      "date": "2026-10-21T14:11:22Z",
+      "stage": "03_REOPENED",
+      "window": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      }
+    },
+    {
+      "anchors": [
+        {
+          "deltaX": 0.06938483547926921,
+          "deltaY": -0.11802575107307689,
+          "image": "comparisonImage-before",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 1268,
+            "width": 951,
+            "x": -237.66666666666666,
+            "y": -299.3333333333333
+          },
+          "pin": "annotationPin-0",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 126.66666666666663,
+            "y": 207.6666666666666
+          },
+          "pinHittable": true,
+          "referenceX": 0.39985693848354786,
+          "referenceY": 0.41255364806866957,
+          "text": "A : la courbe de l’escalier reste mon repère."
+        },
+        {
+          "deltaX": -0.06938483547935448,
+          "deltaY": -0.21530758226055013,
+          "image": "comparisonImage-after",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 1268,
+            "width": 951.0000000000001,
+            "x": 237.66666666666666,
+            "y": -299.3333333333333
+          },
+          "pin": "annotationPin-1",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 792.3333333333333,
+            "y": 429.33333333333326
+          },
+          "pinHittable": true,
+          "referenceX": 0.600143061516452,
+          "referenceY": 0.5874463519313305,
+          "text": "B : la lumière chaude reste attachée à l’image."
+        }
+      ],
+      "canvas": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      },
+      "controls": [
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 99.33333333333326,
+            "x": 536.6666666666667,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "comparisonMode",
+          "label": "Auto"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 50,
+            "x": 648,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "addAnnotation",
+          "label": "Ajouter une annotation"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 54,
+            "x": 710,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "zoomComparison",
+          "label": "Zoom 2,0 fois. Réinitialiser ou agrandir."
+        }
+      ],
+      "date": "2026-10-21T14:11:32Z",
+      "stage": "04_OPEN_ZOOM",
+      "window": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      }
+    },
+    {
+      "anchors": [
+        {
+          "deltaX": 2.842170943040401e-14,
+          "deltaY": 2.842170943040401e-14,
+          "image": "comparisonImage-before",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 1242.6666666666665,
+            "width": 932,
+            "x": -233,
+            "y": -282.3333333333333
+          },
+          "pin": "annotationPin-0",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 31.999999999999986,
+            "x": 123.66666666666667,
+            "y": 214.33333333333334
+          },
+          "pinHittable": true,
+          "referenceX": 0.39985693848354786,
+          "referenceY": 0.41255364806866957,
+          "text": "A : la courbe de l’escalier reste mon repère."
+        },
+        {
+          "deltaX": 5.684341886080802e-14,
+          "deltaY": 0,
+          "image": "comparisonImage-after",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 1242.6666666666665,
+            "width": 932,
+            "x": -233,
+            "y": -282.3333333333333
+          },
+          "pin": "annotationPin-1",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 310.3333333333333,
+            "y": 431.6666666666667
+          },
+          "pinHittable": true,
+          "referenceX": 0.600143061516452,
+          "referenceY": 0.5874463519313305,
+          "text": "B : la lumière chaude reste attachée à l’image."
+        }
+      ],
+      "canvas": {
+        "height": 678,
+        "width": 466,
+        "x": 0,
+        "y": 0
+      },
+      "controls": [
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 96.66666666666669,
+            "x": 78.66666666666666,
+            "y": 582
+          },
+          "hittable": true,
+          "identifier": "comparisonMode",
+          "label": "Auto"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 50,
+            "x": 187.33333333333334,
+            "y": 582
+          },
+          "hittable": true,
+          "identifier": "addAnnotation",
+          "label": "Ajouter une annotation"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 53.99999999999997,
+            "x": 249.33333333333334,
+            "y": 582
+          },
+          "hittable": true,
+          "identifier": "zoomComparison",
+          "label": "Zoom 2,0 fois. Réinitialiser ou agrandir."
+        }
+      ],
+      "date": "2026-10-21T14:12:01Z",
+      "stage": "05_CLOSED_ZOOM",
+      "window": {
+        "height": 678,
+        "width": 466,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "anchors": [
+        {
+          "deltaX": 0.06938483547926921,
+          "deltaY": -0.11802575107307689,
+          "image": "comparisonImage-before",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 1268,
+            "width": 951,
+            "x": -237.66666666666666,
+            "y": -299.3333333333333
+          },
+          "pin": "annotationPin-0",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 126.66666666666663,
+            "y": 207.6666666666666
+          },
+          "pinHittable": true,
+          "referenceX": 0.39985693848354786,
+          "referenceY": 0.41255364806866957,
+          "text": "A : la courbe de l’escalier reste mon repère."
+        },
+        {
+          "deltaX": -0.06938483547935448,
+          "deltaY": -0.21530758226055013,
+          "image": "comparisonImage-after",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 1268,
+            "width": 951.0000000000001,
+            "x": 237.66666666666666,
+            "y": -299.3333333333333
+          },
+          "pin": "annotationPin-1",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 792.3333333333333,
+            "y": 429.33333333333326
+          },
+          "pinHittable": true,
+          "referenceX": 0.600143061516452,
+          "referenceY": 0.5874463519313305,
+          "text": "B : la lumière chaude reste attachée à l’image."
+        }
+      ],
+      "canvas": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      },
+      "controls": [
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 99.33333333333326,
+            "x": 536.6666666666667,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "comparisonMode",
+          "label": "Auto"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 50,
+            "x": 648,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "addAnnotation",
+          "label": "Ajouter une annotation"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 54,
+            "x": 710,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "zoomComparison",
+          "label": "Zoom 2,0 fois. Réinitialiser ou agrandir."
+        }
+      ],
+      "date": "2026-10-21T14:12:23Z",
+      "stage": "06_REOPENED_ZOOM",
+      "window": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      }
+    },
+    {
+      "anchors": [
+        {
+          "deltaX": 0.06366237482117754,
+          "deltaY": 0.08065092989971845,
+          "image": "comparisonImage-before",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 1215,
+            "width": 911,
+            "x": -227.66666666666666,
+            "y": -273
+          },
+          "pin": "annotationPin-0",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 120.66666666666663,
+            "y": 212.33333333333326
+          },
+          "pinHittable": true,
+          "referenceX": 0.39985693848354786,
+          "referenceY": 0.41255364806866957,
+          "text": "A : la courbe de l’escalier reste mon repère."
+        },
+        {
+          "deltaX": -0.06366237482109227,
+          "deltaY": -0.08065092990005951,
+          "image": "comparisonImage-after",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 1215,
+            "width": 910.9999999999999,
+            "x": 267.66666666666663,
+            "y": -273
+          },
+          "pin": "annotationPin-1",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 798.3333333333333,
+            "y": 424.6666666666666
+          },
+          "pinHittable": true,
+          "referenceX": 0.600143061516452,
+          "referenceY": 0.5874463519313305,
+          "text": "B : la lumière chaude reste attachée à l’image."
+        }
+      ],
+      "canvas": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      },
+      "controls": [
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 99.33333333333326,
+            "x": 577.6666666666667,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "comparisonMode",
+          "label": "Auto"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 50,
+            "x": 689,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "addAnnotation",
+          "label": "Ajouter une annotation"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 54,
+            "x": 751,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "zoomComparison",
+          "label": "Zoom 2,0 fois. Réinitialiser ou agrandir."
+        }
+      ],
+      "date": "2026-10-21T14:12:56Z",
+      "stage": "07_PARTIAL_ZOOM",
+      "window": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      }
+    },
+    {
+      "anchors": [
+        {
+          "deltaX": -0.20147830233665331,
+          "deltaY": -0.02843347639480953,
+          "image": "comparisonImage-before",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 607.6666666666665,
+            "width": 455.6666666666667,
+            "x": 0,
+            "y": 30.66666666666661
+          },
+          "pin": "annotationPin-0",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 166,
+            "y": 265.33333333333326
+          },
+          "pinHittable": true,
+          "referenceX": 0.39985693848354786,
+          "referenceY": 0.41255364806866957,
+          "text": "A : la courbe de l’escalier reste mon repère."
+        },
+        {
+          "deltaX": 0.06819265617548353,
+          "deltaY": 0.02843347639480953,
+          "image": "comparisonImage-after",
+          "imageExists": true,
+          "imageFrame": {
+            "height": 607.6666666666665,
+            "width": 455.3333333333333,
+            "x": 495.6666666666667,
+            "y": 30.66666666666661
+          },
+          "pin": "annotationPin-1",
+          "pinExists": true,
+          "pinFrame": {
+            "height": 32,
+            "width": 32,
+            "x": 753,
+            "y": 371.6666666666666
+          },
+          "pinHittable": true,
+          "referenceX": 0.600143061516452,
+          "referenceY": 0.5874463519313305,
+          "text": "B : la lumière chaude reste attachée à l’image."
+        }
+      ],
+      "canvas": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      },
+      "controls": [
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 99.33333333333326,
+            "x": 577.6666666666667,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "comparisonMode",
+          "label": "Auto"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 50,
+            "x": 689,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "addAnnotation",
+          "label": "Ajouter une annotation"
+        },
+        {
+          "exists": true,
+          "frame": {
+            "height": 50,
+            "width": 54,
+            "x": 751,
+            "y": 572.9999999999999
+          },
+          "hittable": true,
+          "identifier": "zoomComparison",
+          "label": "Zoom 1,0 fois. Réinitialiser ou agrandir."
+        }
+      ],
+      "date": "2026-10-21T14:13:06Z",
+      "stage": "08_PARTIAL",
+      "window": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": -5.684341886080802e-14
+      }
+    }
+  ],
+  "testedSourcesSHA256": {
+    "Parallele/ComparisonCanvas.swift": "95cd2b07ae0962171b9c7b4df0449abe8d705dcbe13bf58cc2dcc1551b9a5cee",
+    "Parallele/ComparisonEditor.swift": "3920d19ca6d52822750dd8cc800fb8ea54e7d6e5ffd98fc18ff1327ec5e27726",
+    "ParalleleUITests/ParalleleUITests.swift": "618e123f583c27473fef1cba4f07dd1571e0f5ccd2692bb18a3b558fb2e418c5"
+  }
+}

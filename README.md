@@ -56,7 +56,33 @@ xcodebuild -project Parallele.xcodeproj -scheme Parallele \
   -destination 'platform=iOS Simulator,name=Parallèle — iPhone Duo' test
 ```
 
-Les preuves du passage de validation sont décrites dans `Documentation/Validation.md`.
+Les preuves du passage initial sont décrites dans [Validation.md](Documentation/Validation.md). Le [contrôle du pliage du 21 octobre](Documentation/Validation-pliage-2026-10-21.md) complète ce bilan avec les poses réelles de Device Hub et les mesures de position des repères.
+
+### Rejouer le pliage dans Device Hub
+
+Le test `testAnnotationsSurviveDeviceHubFoldTransitions` demande un pilotage des poses. Il est ignoré lors d’un simple **⌘U**, afin de ne pas attendre une intervention au milieu de la suite ordinaire.
+
+1. Démarrer le simulateur Duo dans Device Hub et choisir **Closed** sous l’appareil.
+2. Depuis le dossier du projet, lancer le parcours ci-dessous.
+3. Suivre les lignes `[PARALLELE_FOLD] READY_…` du terminal : **Open**, **Closed**, **Open**, puis **Closed**, **Open** et **Partially Open** pour le passage avec zoom.
+4. Effectuer chaque changement dans les 120 secondes. Le test attend un changement mesuré de la disposition avant de poursuivre ; une attente dépassée est un échec.
+
+```sh
+TEST_RUNNER_PARALLELE_FOLD_TEST=1 xcodebuild \
+  -project Parallele.xcodeproj -scheme Parallele \
+  -destination 'platform=iOS Simulator,name=Parallèle — iPhone Duo' \
+  -only-testing:ParalleleUITests/ParalleleUITests/testAnnotationsSurviveDeviceHubFoldTransitions \
+  -parallel-testing-enabled NO \
+  -resultBundlePath /tmp/Parallele-pliage.xcresult test
+```
+
+Choisir un nouveau chemin `.xcresult` à chaque exécution. Le résultat Xcode contient les captures et les mesures JSON de chaque étape. Les cadres des images ne sont exposés au test qu’en compilation Debug avec `--uitesting`.
+
+Sur le runtime Duo utilisé ici, les captures XCTest de l’écran intérieur peuvent être noires, même si le scénario UI fonctionne. Les captures du bilan ont donc été prises sur l’écran actif avec `simctl` : écran `1` fermé, écran `3` ouvert ou partiellement ouvert. Avec ce seul simulateur démarré, par exemple :
+
+```sh
+xcrun simctl io booted screenshot --display 3 /tmp/Parallele-ouvert.png
+```
 
 ## Organisation
 

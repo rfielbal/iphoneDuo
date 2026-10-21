@@ -4,7 +4,11 @@ Ce journal décrit les évolutions de Parallèle. Les commits conservent le dét
 
 ## À paraître
 
-Aucune modification en attente.
+### 21 octobre 2026
+
+- Correction des commandes de comparaison qui chevauchaient la zone de pliure en position partiellement ouverte : elles restent désormais dans le panneau droit lorsque la division verticale est active.
+- Ajout d’un parcours de pliage piloté dans Device Hub : transitions fermé/ouvert, zoom 1× et 2×, position intermédiaire, mesure des deux repères et relecture de leurs notes.
+- Conservation des captures et mesures dans le [bilan de pliage](Documentation/Validation-pliage-2026-10-21.md), avec la procédure pour rejouer le test. Le contrôle reste limité au simulateur.
 
 ## 1.0.0 — 21 octobre 2026
 

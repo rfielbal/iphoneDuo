@@ -11,9 +11,17 @@ final class ParalleleUITests: XCTestCase {
         "-AppleLocale", "fr_FR"
     ]
 
+    private var isDeviceHubFoldTest: Bool {
+        name.contains("testAnnotationsSurviveDeviceHubFoldTransitions")
+    }
+
     override func setUpWithError() throws {
         continueAfterFailure = false
-        XCUIDevice.shared.orientation = .portrait
+        if isDeviceHubFoldTest,
+           ProcessInfo.processInfo.environment["PARALLELE_FOLD_TEST"] != "1" {
+            throw XCTSkip("Parcours Device Hub piloté : activer TEST_RUNNER_PARALLELE_FOLD_TEST=1 et sélectionner ce test seul.")
+        }
+        if !isDeviceHubFoldTest { XCUIDevice.shared.orientation = .portrait }
         app = XCUIApplication()
         app.launchArguments = launchArguments + ["--reset-test-library"]
         app.launch()
@@ -31,7 +39,7 @@ final class ParalleleUITests: XCTestCase {
         }
         app?.terminate()
         app = nil
-        XCUIDevice.shared.orientation = .portrait
+        if !isDeviceHubFoldTest { XCUIDevice.shared.orientation = .portrait }
     }
 
     func testDemoModesDividerAndLocalExport() throws {
@@ -195,6 +203,137 @@ final class ParalleleUITests: XCTestCase {
         XCTAssertEqual(app.buttons.matching(identifier: "demoProject").count, 1)
     }
 
+    /// Run this method alone with TEST_RUNNER_PARALLELE_FOLD_TEST=1.
+    /// xcodebuild removes TEST_RUNNER_ when forwarding the variable to this runner.
+    /// Prepare Device Hub in Closed, then follow the READY_ signals. Only an
+    /// observed window or image-layout change advances the test.
+    func testAnnotationsSurviveDeviceHubFoldTransitions() throws {
+        openDemo()
+        selectMode("Balayage")
+        let divider = element("comparisonDivider")
+        XCTAssertTrue(divider.waitForExistence(timeout: 5))
+        XCTAssertEqual(divider.value as? String, "50 pour cent",
+                       "Le placement doit commencer avec une séparation A/B au milieu.")
+
+        let noteA = "A : la courbe de l’escalier reste mon repère."
+        let noteB = "B : la lumière chaude reste attachée à l’image."
+        addFoldAnnotation(noteA, at: CGVector(dx: 0.40, dy: 0.42))
+        addFoldAnnotation(noteB, at: CGVector(dx: 0.60, dy: 0.58))
+        closeFoldCallout()
+        let anchors = [
+            captureFoldAnchor(pin: "annotationPin-0", image: "comparisonImage-before", text: noteA),
+            captureFoldAnchor(pin: "annotationPin-1", image: "comparisonImage-after", text: noteB)
+        ]
+        selectMode("Automatique")
+        let closedWindow = app.windows.firstMatch.frame
+        let closedCanvas = element("comparisonCanvas").frame
+        XCTAssertTrue(divider.exists, "Le départ Closed doit utiliser la présentation compacte automatique.")
+        verifyFoldStage("00_CLOSED", anchors: anchors)
+        let closedImages = anchors.map { element($0.imageIdentifier).frame }
+
+        waitForDeviceHubPose("READY_OPEN", anchors: anchors) { [self] in
+            isExpanded(comparedWith: closedWindow)
+        }
+        waitForDisappearance(divider, message: "Le mode Auto doit présenter les deux images une fois le Duo ouvert.")
+        verifyFoldStage("01_OPEN", anchors: anchors)
+
+        // The operator may inspect Partially Open during this wait. It must not
+        // satisfy Closed merely because one frame changed: both geometries must
+        // return to their recorded compact dimensions.
+        waitForDeviceHubPose("READY_CLOSED", anchors: anchors) { [self] in
+            sameDimensions(app.windows.firstMatch.frame, closedWindow)
+                && sameDimensions(element("comparisonCanvas").frame, closedCanvas)
+        }
+        XCTAssertTrue(divider.waitForExistence(timeout: 5),
+                      "La fermeture doit retrouver le balayage automatique et les deux repères.")
+        XCTAssertEqual(divider.value as? String, "50 pour cent")
+        verifyFoldStage("02_CLOSED_AGAIN", anchors: anchors)
+
+        waitForDeviceHubPose("READY_REOPEN", anchors: anchors) { [self] in
+            isExpanded(comparedWith: closedWindow)
+        }
+        waitForDisappearance(divider, message: "La réouverture doit rétablir la présentation étendue.")
+        verifyFoldStage("03_REOPENED", anchors: anchors)
+        let openImages = anchors.map { element($0.imageIdentifier).frame }
+
+        let imageBeforeZoom = element("comparisonImage-before").frame
+        element("zoomComparison").tap()
+        let enlarged = NSPredicate { [self] _, _ in
+            let frame = element("comparisonImage-before").frame
+            return frame.width > imageBeforeZoom.width * 1.8
+                && frame.height > imageBeforeZoom.height * 1.8
+        }
+        let zoomResult = XCTWaiter.wait(
+            for: [XCTNSPredicateExpectation(predicate: enlarged, object: nil)], timeout: 6
+        )
+        XCTAssertEqual(zoomResult, .completed,
+                       "Le zoom 2× doit agrandir réellement l’image exposée, sans se limiter au libellé du bouton.")
+        verifyFoldStage("04_OPEN_ZOOM", anchors: anchors)
+
+        waitForDeviceHubPose("READY_ZOOM_CLOSED", anchors: anchors) { [self] in
+            sameDimensions(app.windows.firstMatch.frame, closedWindow)
+                && sameDimensions(element("comparisonCanvas").frame, closedCanvas)
+        }
+        XCTAssertTrue(divider.waitForExistence(timeout: 5))
+        XCTAssertEqual(divider.value as? String, "50 pour cent")
+        verifyFoldStage("05_CLOSED_ZOOM", anchors: anchors)
+        assertFoldZoom(2, anchors: anchors, unzoomedFrames: closedImages)
+
+        waitForDeviceHubPose("READY_ZOOM_REOPEN", anchors: anchors) { [self] in
+            isExpanded(comparedWith: closedWindow)
+        }
+        waitForDisappearance(divider, message: "La réouverture doit conserver le zoom dans la présentation étendue.")
+        verifyFoldStage("06_REOPENED_ZOOM", anchors: anchors)
+        assertFoldZoom(2, anchors: anchors, unzoomedFrames: openImages)
+
+        let openZoomWindow = app.windows.firstMatch.frame
+        let openZoomBefore = element("comparisonImage-before").frame
+        let openZoomAfter = element("comparisonImage-after").frame
+        waitForDeviceHubPose("READY_PARTIAL", anchors: anchors) { [self] in
+            let before = element("comparisonImage-before")
+            let after = element("comparisonImage-after")
+            guard before.exists, after.exists,
+                  sameDimensions(app.windows.firstMatch.frame, openZoomWindow) else { return false }
+            return before.frame.width < openZoomBefore.width - 2
+                || abs(after.frame.minX - openZoomAfter.minX) > 2
+                || abs(after.frame.minY - openZoomAfter.minY) > 2
+        }
+        verifyFoldStage("07_PARTIAL_ZOOM", anchors: anchors)
+
+        let partialZoomBefore = element("comparisonImage-before").frame
+        element("zoomComparison").tap()
+        let restored = NSPredicate { [self] _, _ in
+            let frame = element("comparisonImage-before").frame
+            return frame.width < partialZoomBefore.width * 0.6
+                && frame.height < partialZoomBefore.height * 0.6
+        }
+        let restoreResult = XCTWaiter.wait(
+            for: [XCTNSPredicateExpectation(predicate: restored, object: nil)], timeout: 6
+        )
+        XCTAssertEqual(restoreResult, .completed,
+                       "Le retour à 1× doit réduire réellement l’image dans la pose intermédiaire.")
+        verifyFoldStage("08_PARTIAL", anchors: anchors)
+        let availablePane = element("comparisonImage-after").frame
+        for identifier in ["comparisonMode", "addAnnotation", "zoomComparison"] {
+            let control = element(identifier)
+            XCTAssertGreaterThanOrEqual(control.frame.minX, availablePane.minX - 2,
+                                        "08_PARTIAL : \(identifier) doit rester à droite de la charnière.")
+            XCTAssertLessThanOrEqual(control.frame.maxX, availablePane.maxX + 2,
+                                     "08_PARTIAL : \(identifier) doit rester dans le panneau disponible.")
+        }
+        let add = element("addAnnotation")
+        add.tap()
+        XCTAssertTrue(app.buttons["Annuler le repère"].waitForExistence(timeout: 5),
+                      "Le bouton du dock déplacé doit permettre de commencer un placement.")
+        attachScreenshot(named: "Duo — 08_PARTIAL — placement activé hors charnière")
+        add.tap()
+        XCTAssertTrue(app.buttons["Ajouter une annotation"].waitForExistence(timeout: 5),
+                      "Le placement doit pouvoir être annulé depuis le même bouton.")
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "annotationPin-")).count,
+                       anchors.count, "L’annulation ne doit ajouter ni supprimer de repère.")
+        foldLog("COMPLETE — pliages à 1× et 2×, pose intermédiaire, deux repères alignés et relisibles.")
+    }
+
     /// Requires at least two images in the simulator's Photos library.
     /// Seed with `simctl addmedia` before the run; the picker still performs
     /// the same limited-selection import as a real user.
@@ -234,6 +373,162 @@ final class ParalleleUITests: XCTestCase {
 
     private func element(_ identifier: String) -> XCUIElement {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    }
+
+    private struct FoldAnchor {
+        let pinIdentifier: String
+        let imageIdentifier: String
+        let text: String
+        let normalized: CGPoint
+    }
+
+    private func addFoldAnnotation(_ text: String, at location: CGVector) {
+        element("addAnnotation").tap()
+        element("comparisonCanvas").coordinate(withNormalizedOffset: location).tap()
+        let input = element("annotationText")
+        XCTAssertTrue(input.waitForExistence(timeout: 5))
+        input.tap()
+        input.typeText(text)
+        element("saveAnnotation").tap()
+        waitForDisappearance(input, message: "La note doit être enregistrée avant le changement de pose.")
+        XCTAssertTrue(app.staticTexts[text].waitForExistence(timeout: 5))
+    }
+
+    private func closeFoldCallout() {
+        let close = app.buttons["Fermer le repère"]
+        if close.exists { close.tap() }
+    }
+
+    private func captureFoldAnchor(pin pinIdentifier: String, image imageIdentifier: String,
+                                   text: String) -> FoldAnchor {
+        let pin = element(pinIdentifier)
+        let image = element(imageIdentifier)
+        XCTAssertTrue(pin.waitForExistence(timeout: 5))
+        XCTAssertTrue(image.waitForExistence(timeout: 5))
+        XCTAssertGreaterThan(image.frame.width, 0)
+        XCTAssertGreaterThan(image.frame.height, 0)
+        let point = CGPoint(x: (pin.frame.midX - image.frame.minX) / image.frame.width,
+                            y: (pin.frame.midY - image.frame.minY) / image.frame.height)
+        XCTAssertTrue((0...1).contains(point.x) && (0...1).contains(point.y),
+                      "Le repère doit être placé à l’intérieur de l’image de référence.")
+        return FoldAnchor(pinIdentifier: pinIdentifier, imageIdentifier: imageIdentifier,
+                          text: text, normalized: point)
+    }
+
+    private func sameDimensions(_ first: CGRect, _ second: CGRect) -> Bool {
+        abs(first.width - second.width) <= 2 && abs(first.height - second.height) <= 2
+    }
+
+    private func assertFoldZoom(_ scale: CGFloat, anchors: [FoldAnchor], unzoomedFrames: [CGRect]) {
+        for (anchor, baseline) in zip(anchors, unzoomedFrames) {
+            let current = element(anchor.imageIdentifier).frame
+            XCTAssertEqual(current.width, baseline.width * scale, accuracy: 2,
+                           "Le pliage doit conserver le facteur de zoom de chaque image.")
+            XCTAssertEqual(current.height, baseline.height * scale, accuracy: 2)
+        }
+    }
+
+    private func isExpanded(comparedWith closed: CGRect) -> Bool {
+        let current = app.windows.firstMatch.frame
+        let canvas = element("comparisonCanvas").frame
+        return current.width * current.height > closed.width * closed.height * 1.2
+            && canvas.width >= 560
+    }
+
+    private func waitForDeviceHubPose(_ signal: String, anchors: [FoldAnchor],
+                                      condition: @escaping () -> Bool) {
+        attachFoldGeometry("BEFORE_\(signal)", anchors: anchors)
+        foldLog("\(signal) — action Device Hub attendue ; délai maximal 120 secondes.")
+        let predicate = NSPredicate { _, _ in condition() }
+        let result = XCTWaiter.wait(
+            for: [XCTNSPredicateExpectation(predicate: predicate, object: nil)],
+            timeout: 120
+        )
+        if result != .completed {
+            attachFoldGeometry("TIMEOUT_\(signal)", anchors: anchors)
+            attachScreenshot(named: "Duo — délai dépassé \(signal)")
+        }
+        XCTAssertEqual(result, .completed,
+                       "\(signal) : aucun changement réel vers les dimensions attendues n’a été observé.")
+    }
+
+    private func verifyFoldStage(_ stage: String, anchors: [FoldAnchor]) {
+        let aligned = NSPredicate { [self] _, _ in
+            anchors.allSatisfy { anchor in
+                let image = element(anchor.imageIdentifier)
+                let pin = element(anchor.pinIdentifier)
+                guard image.exists, pin.exists, image.frame.width > 0, image.frame.height > 0 else { return false }
+                let expected = CGPoint(x: image.frame.minX + image.frame.width * anchor.normalized.x,
+                                       y: image.frame.minY + image.frame.height * anchor.normalized.y)
+                return abs(pin.frame.midX - expected.x) <= 2 && abs(pin.frame.midY - expected.y) <= 2
+            }
+        }
+        let alignment = XCTWaiter.wait(
+            for: [XCTNSPredicateExpectation(predicate: aligned, object: nil)], timeout: 6
+        )
+        attachFoldGeometry(stage, anchors: anchors)
+        attachScreenshot(named: "Duo — \(stage) — repères")
+        XCTAssertEqual(alignment, .completed,
+                       "\(stage) : les repères doivent rester aux mêmes coordonnées dans leurs images, à 2 points près.")
+        for identifier in ["comparisonMode", "addAnnotation", "zoomComparison"] {
+            let control = element(identifier)
+            XCTAssertTrue(control.exists && control.isHittable,
+                          "\(stage) : la commande \(identifier) doit rester accessible au toucher.")
+        }
+        for anchor in anchors {
+            let pin = element(anchor.pinIdentifier)
+            XCTAssertTrue(pin.isHittable, "\(stage) : le repère doit rester accessible au toucher.")
+            pin.tap()
+            XCTAssertTrue(app.staticTexts[anchor.text].waitForExistence(timeout: 5),
+                          "\(stage) : le texte exact de la note doit être conservé et relisible.")
+            attachScreenshot(named: "Duo — \(stage) — \(anchor.pinIdentifier)")
+            closeFoldCallout()
+        }
+    }
+
+    private func attachFoldGeometry(_ stage: String, anchors: [FoldAnchor]) {
+        func frameDictionary(_ frame: CGRect) -> [String: Double] {
+            ["x": frame.minX, "y": frame.minY, "width": frame.width, "height": frame.height]
+                .mapValues(Double.init)
+        }
+        let notes: [[String: Any]] = anchors.map { anchor in
+            let pin = element(anchor.pinIdentifier)
+            let image = element(anchor.imageIdentifier)
+            let imageFrame = image.exists ? image.frame : .zero
+            let pinFrame = pin.exists ? pin.frame : .zero
+            let expected = CGPoint(x: imageFrame.minX + imageFrame.width * anchor.normalized.x,
+                                   y: imageFrame.minY + imageFrame.height * anchor.normalized.y)
+            return ["pin": anchor.pinIdentifier, "image": anchor.imageIdentifier, "text": anchor.text,
+                    "pinExists": pin.exists, "pinHittable": pin.exists && pin.isHittable,
+                    "imageExists": image.exists, "imageFrame": frameDictionary(imageFrame),
+                    "pinFrame": frameDictionary(pinFrame),
+                    "referenceX": Double(anchor.normalized.x), "referenceY": Double(anchor.normalized.y),
+                    "deltaX": Double(pinFrame.midX - expected.x), "deltaY": Double(pinFrame.midY - expected.y)]
+        }
+        let controls: [[String: Any]] = ["comparisonMode", "addAnnotation", "zoomComparison"].map { identifier in
+            let control = element(identifier)
+            return ["identifier": identifier, "exists": control.exists,
+                    "hittable": control.exists && control.isHittable,
+                    "label": control.exists ? control.label : "",
+                    "frame": frameDictionary(control.exists ? control.frame : .zero)]
+        }
+        let diagnostic: [String: Any] = [
+            "stage": stage, "date": ISO8601DateFormatter().string(from: Date()),
+            "window": frameDictionary(app.windows.firstMatch.frame),
+            "canvas": frameDictionary(element("comparisonCanvas").frame), "anchors": notes,
+            "controls": controls
+        ]
+        guard let data = try? JSONSerialization.data(withJSONObject: diagnostic, options: [.prettyPrinted, .sortedKeys]),
+              let description = String(data: data, encoding: .utf8) else { return }
+        let attachment = XCTAttachment(string: description)
+        attachment.name = "Duo — géométrie \(stage)"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        foldLog("GEOMETRY \(stage) \(description.replacingOccurrences(of: "\n", with: " "))")
+    }
+
+    private func foldLog(_ message: String) {
+        FileHandle.standardOutput.write(Data("[PARALLELE_FOLD] \(message)\n".utf8))
     }
 
     private func openDemo() {

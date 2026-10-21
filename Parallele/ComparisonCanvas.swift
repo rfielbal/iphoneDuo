@@ -66,6 +66,14 @@ struct ComparisonCanvas: View {
     @State private var paneFrames: [ImageSide: CGRect] = [:]
     @State private var draggingDivider = false
 
+    private var exposesImageFramesForTesting: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("--uitesting")
+        #else
+        false
+        #endif
+    }
+
     var body: some View {
         GeometryReader { geometry in
             Group {
@@ -177,7 +185,8 @@ struct ComparisonCanvas: View {
                 Image(uiImage: image).resizable()
                     .frame(width: rect.width, height: rect.height)
                     .position(x: rect.midX, y: rect.midY)
-                    .accessibilityHidden(true)
+                    .accessibilityIdentifier("comparisonImage-\(side.rawValue)")
+                    .accessibilityHidden(!exposesImageFramesForTesting)
                 if showsPins {
                     pins(image: image, side: side, size: proxy.size)
                 }

@@ -49,7 +49,12 @@ struct ComparisonEditor: View {
                             .frame(maxWidth: 300).padding(16).padding(.bottom, 88)
                     }
                 }
-                .overlay(alignment: .bottom) { controls(paired: paired) }
+                .overlay(alignment: .bottomTrailing) {
+                    controls(paired: paired)
+                        .frame(width: controlsWidth(in: proxy, paired: paired))
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("comparisonControls")
+                }
                 .animation(reduceMotion ? nil : .smooth(duration: 0.28), value: paired)
             }
             .navigationTitle(project.title)
@@ -130,6 +135,29 @@ struct ComparisonEditor: View {
         .alert("Action impossible", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK", role: .cancel) { error = nil }
         } message: { Text(error ?? "") }
+    }
+
+    private func controlsWidth(in proxy: GeometryProxy, paired: Bool) -> CGFloat {
+        if #available(iOS 27.1, *) {
+            let bounds = CGRect(origin: .zero, size: proxy.size)
+            if let division = proxy.reservedRegions(kind: .division).first(where: {
+                $0.isActive && $0.frame.height > $0.frame.width && $0.frame.intersects(bounds)
+            }) {
+                // Keep the entire dock in the trailing pane. The geometry is
+                // already inside the system bars' safe area; the reserved region
+                // supplies the additional clearance needed around the hinge.
+                let start = max(0, division.frame.maxX + division.margins.trailing)
+                let available = proxy.size.width - start
+                if available > 0 { return available }
+            }
+        }
+        // A horizontal fold leaves the bottom dock inside the lower pane.
+        // With no active fold, use the right pane only for a horizontal split.
+        // Compact and vertically arranged presentations retain their centering.
+        if paired && proxy.size.width > proxy.size.height {
+            return proxy.size.width / 2
+        }
+        return proxy.size.width
     }
 
     private func controls(paired: Bool) -> some View {
