@@ -249,12 +249,12 @@ struct ComparisonCanvas: View {
                     Button { onSelect(note) } label: {
                         Text("\(index + 1)").font(.system(.callout, design: .rounded, weight: .bold))
                             .foregroundStyle(.white).frame(width: 32, height: 32)
-                            .background(.blue, in: Circle())
+                            .background(note.status == .validated ? Color.green : Color.blue, in: Circle())
                             .overlay(Circle().stroke(.white.opacity(0.9), lineWidth: 2))
                             .shadow(color: .black.opacity(0.18), radius: 4, y: 2)
                     }
                     .position(x: positionX, y: rect.minY + rect.height * note.y)
-                    .accessibilityLabel("Repère \(index + 1), \(note.text)")
+                    .accessibilityLabel("Repère \(index + 1), \(note.text), \(note.status.title)")
                     .accessibilityIdentifier("annotationPin-\(index)")
                     .disabled(isPlacing)
                 }

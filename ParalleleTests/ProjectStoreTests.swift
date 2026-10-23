@@ -21,7 +21,7 @@ final class ProjectStoreTests: XCTestCase {
         var project = try XCTUnwrap(store.project(id: id))
         project.annotations = [
             ImageAnnotation(x: 0.23, y: 0.81, text: "Une ombre plus douce.", side: .before),
-            ImageAnnotation(x: 0.67, y: 0.12, text: "Les hautes lumières.", side: .after)
+            ImageAnnotation(x: 0.67, y: 0.12, text: "Les hautes lumières.", side: .after, status: .validated)
         ]
         project.split = 0.73
         project.mode = .sideBySide
@@ -33,6 +33,9 @@ final class ProjectStoreTests: XCTestCase {
         let reopened = ProjectStore(directory: directory, seedDemo: false)
         let loaded = try XCTUnwrap(reopened.project(id: id))
         XCTAssertEqual(loaded.annotations, project.annotations)
+        XCTAssertEqual(loaded.annotations.map(\.status), [.toReview, .validated])
+        XCTAssertEqual(loaded.pendingAnnotationCount, 1)
+        XCTAssertEqual(loaded.validatedAnnotationCount, 1)
         XCTAssertEqual(loaded.split, 0.73)
         XCTAssertEqual(loaded.mode, .sideBySide)
         XCTAssertEqual(loaded.zoom, 1.8)
@@ -54,6 +57,51 @@ final class ProjectStoreTests: XCTestCase {
         try reopened.update(reset)
         XCTAssertEqual(reopened.project(id: id)?.panX, 0.5)
         XCTAssertEqual(reopened.project(id: id)?.panY, 0)
+    }
+
+    @MainActor
+    func testLegacyAnnotationsWithoutStatusCanBeReviewedAndSaved() throws {
+        let manifest = directory.appendingPathComponent("projects.json")
+        let legacyJSON = """
+        [{
+            "id": "D195A3B4-D1CB-4C4C-B9AA-AC8345DB184E",
+            "title": "Ancienne comparaison",
+            "createdAt": 0,
+            "updatedAt": 0,
+            "beforeFilename": "legacy-before.jpg",
+            "afterFilename": "legacy-after.jpg",
+            "annotations": [{
+                "id": "49DD1CF2-4154-4455-9F72-8F102F822529",
+                "x": 0.25,
+                "y": 0.75,
+                "text": "Une annotation existante.",
+                "side": "before"
+            }],
+            "split": 0.5,
+            "mode": "automatic",
+            "zoom": 1
+        }]
+        """
+        try Data(legacyJSON.utf8).write(to: manifest)
+
+        let store = ProjectStore(directory: directory, seedDemo: false)
+        XCTAssertNil(store.errorMessage)
+        var migrated = try XCTUnwrap(store.projects.first)
+        XCTAssertEqual(migrated.annotations.first?.status, .toReview)
+        XCTAssertEqual(migrated.pendingAnnotationCount, 1)
+        XCTAssertEqual(migrated.validatedAnnotationCount, 0)
+        let annotationID = try XCTUnwrap(migrated.annotations.first?.id)
+        migrated.annotations[0].status = .validated
+        try store.update(migrated)
+
+        let reopened = ProjectStore(directory: directory, seedDemo: false)
+        let saved = try XCTUnwrap(reopened.project(id: migrated.id))
+        XCTAssertNil(reopened.errorMessage)
+        XCTAssertEqual(saved.annotations.first?.id, annotationID)
+        XCTAssertEqual(saved.annotations.first?.text, "Une annotation existante.")
+        XCTAssertEqual(saved.annotations.first?.status, .validated)
+        XCTAssertEqual(saved.pendingAnnotationCount, 0)
+        XCTAssertEqual(saved.validatedAnnotationCount, 1)
     }
 
     @MainActor
@@ -89,7 +137,10 @@ final class ProjectStoreTests: XCTestCase {
         let store = ProjectStore(directory: directory, seedDemo: false)
         let originalID = try store.create(title: "Original", before: image(.blue), after: image(.cyan))
         var original = try XCTUnwrap(store.project(id: originalID))
-        original.annotations = [ImageAnnotation(x: 0.2, y: 0.3, text: "À conserver", side: .after)]
+        original.annotations = [
+            ImageAnnotation(x: 0.2, y: 0.3, text: "À conserver", side: .after, status: .validated),
+            ImageAnnotation(x: 0.6, y: 0.4, text: "À reprendre", side: .before)
+        ]
         original.zoom = 2.4
         original.panX = 0.45
         original.panY = -0.3
@@ -99,6 +150,10 @@ final class ProjectStoreTests: XCTestCase {
         XCTAssertNotEqual(copy.beforeFilename, original.beforeFilename)
         XCTAssertEqual(copy.annotations.first?.text, original.annotations.first?.text)
         XCTAssertNotEqual(copy.annotations.first?.id, original.annotations.first?.id)
+        XCTAssertEqual(copy.annotations.map(\.status), original.annotations.map(\.status))
+        XCTAssertTrue(Set(copy.annotations.map(\.id)).isDisjoint(with: original.annotations.map(\.id)))
+        XCTAssertEqual(copy.pendingAnnotationCount, 1)
+        XCTAssertEqual(copy.validatedAnnotationCount, 1)
         XCTAssertEqual(copy.zoom, original.zoom)
         XCTAssertEqual(copy.panX, original.panX)
         XCTAssertEqual(copy.panY, original.panY)

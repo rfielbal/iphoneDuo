@@ -1,6 +1,6 @@
 # Parallèle
 
-Application native SwiftUI pour comparer deux images, annoter leurs différences et exporter une fiche avant/après. Interface en français, Liquid Glass natif, stockage local. Aucun compte, service distant, package tiers ou clé API.
+Application native SwiftUI pour comparer deux images, suivre la revue de leurs différences et exporter une fiche avant/après. Interface en français, Liquid Glass natif, stockage local. Aucun compte, service distant, package tiers ou clé API.
 
 ## Versions et historique
 
@@ -22,22 +22,33 @@ Version minimum de l’app : iOS 26.0. Le SDK de compilation requis reste 27.1 p
 ## Utilisation
 
 - **+** : choisir séparément Original et Retouche via le sélecteur Photos, donner un titre, créer. Seules les photos choisies sont accessibles à l’app. Le bouton d’inversion échange les images avant création.
+- **Essayer une revue** : créer et ouvrir un exemple indépendant avec trois observations sur une interface fictive. Ce bouton ne remplace aucun projet existant.
 - **Auto** : balayage en largeur compacte ; comparaison des deux images dans une fenêtre large.
 - **Balayage** : déplacer le séparateur A/B. Le mode peut être imposé même sur un grand écran.
 - **Côte à côte** : présenter les deux images. Sur Duo, `ArrangementView` choisit une répartition adaptée à l’espace et à la séparation de l’écran ; elle peut devenir verticale.
 - **Zoom** : pincer pour zoomer de 1× à 4× ; déplacer l’image zoomée avec un doigt. Le bouton de zoom alterne 1× et 2×. La transformation est synchronisée.
 - **Bulle +** : toucher un détail de l’image, saisir une observation, enregistrer. Le placement repasse à 1× pour rester précis. Toucher un repère pour relire ou modifier sa note.
-- **Options > Annotations** : liste complète ; glisser une note pour la supprimer.
-- **Partager** : produire un PNG avec les deux images complètes, les repères et les commentaires. Choisir ensuite Photos, Fichiers ou une autre destination dans la feuille de partage système.
+- **Revue**, dans la barre de l’éditeur : retrouver toutes les observations, leur avancement et les filtres **Toutes**, **À corriger**, **Validé**. Toucher une ligne pour retrouver son repère dans l’image. Glisser une ligne vers la droite pour valider ou rouvrir l’observation, vers la gauche pour la supprimer.
+- **Valider / Rouvrir**, dans la fiche d’un repère : passer une observation à **Validé** ou la remettre **À corriger**, sans effacer son texte.
+- **Partager** : produire un PNG avec les deux images complètes, les repères, les commentaires et leurs états, écrits en toutes lettres. La fiche indique aussi le nombre de points à corriger et validés. Choisir ensuite Photos, Fichiers ou une autre destination dans la feuille de partage système.
 - Appui long sur une carte de la bibliothèque : renommer, dupliquer ou supprimer. La suppression demande confirmation et ne touche pas la photothèque.
 
 Pour importer dans le simulateur, on peut glisser des photos depuis le Finder sur sa fenêtre, puis les choisir dans le sélecteur Photos. Les fichiers DemoBefore.jpg et DemoAfter.jpg peuvent servir d’essai.
+
+### Essayer la revue sans importer de photos
+
+1. Dans la bibliothèque, toucher **Essayer une revue**. La comparaison « Revue d’interface — Atelier » contient deux versions du même écran fictif, générées localement, et trois observations : bouton de réservation, date et hiérarchie du texte.
+2. Ouvrir **Revue** : deux observations sont **À corriger**, une est **Validé**. Filtrer les points restant à vérifier, puis toucher une observation pour afficher le détail concerné.
+3. Valider une observation après lecture ; utiliser **Rouvrir** pour revenir sur cette décision. Les compteurs de la revue et de la bibliothèque suivent ces changements.
+4. Quitter puis rouvrir le projet pour reprendre la revue, ou utiliser **Partager** pour en conserver une fiche PNG.
+
+L’exemple est une comparaison modifiable comme les autres, créée uniquement à la demande. Chaque nouvel essai crée son propre projet. Le statut exprime une décision de revue ; il ne corrige pas les images et ne constitue pas une validation automatique de leur qualité.
 
 ## Données et limites
 
 Les projets sont conservés dans `Application Support/Parallele` à l’intérieur du conteneur de l’app : manifeste `projects.json`, copies JPEG dans `Images`. Les images importées sont normalisées (orientation et grand côté maximum 2 500 pixels). Les originaux Photos restent intacts. Sauvegarde du manifeste atomique ; un manifeste illisible est préservé et bloque l’écriture au lieu de réinitialiser les données.
 
-Le titre, les annotations, le mode, le séparateur, le zoom et le déplacement sont sauvegardés. Le redimensionnement conserve le projet et les repères, définis dans les coordonnées normalisées de chaque image. Les images sont ajustées sans recadrage : des marges peuvent apparaître pour des proportions différentes. L’app ne réalise ni retouche, ni recalage automatique de deux prises de vue, ni détection de différences. L’export est une vue d’ensemble, indépendamment du zoom actuel.
+Le titre, les annotations et leurs statuts, le mode, le séparateur, le zoom et le déplacement sont sauvegardés. La duplication conserve aussi les statuts. Les projets existants restent lisibles : une annotation enregistrée avant l’ajout des statuts est considérée **À corriger**, sans perte de son texte ni de sa position. Le redimensionnement conserve le projet et les repères, définis dans les coordonnées normalisées de chaque image. Les images sont ajustées sans recadrage : des marges peuvent apparaître pour des proportions différentes. L’app ne réalise ni retouche, ni recalage automatique de deux prises de vue, ni détection de différences. L’export est une vue d’ensemble, indépendamment du zoom actuel et du filtre de la revue.
 
 Pas de synchronisation iCloud ni de serveur. Désinstaller l’app ou effacer le simulateur supprime son stockage local. Les exports sont indépendants du projet. Une fiche exceptionnellement longue est refusée avec un message au-delà de la limite de taille prévue.
 
@@ -57,6 +68,8 @@ xcodebuild -project Parallele.xcodeproj -scheme Parallele \
 ```
 
 Les preuves du passage initial sont décrites dans [Validation.md](Documentation/Validation.md). Le [contrôle du pliage du 21 octobre](Documentation/Validation-pliage-2026-10-21.md) complète ce bilan avec les poses réelles de Device Hub et les mesures de position des repères.
+
+Le [bilan de la revue du 23 octobre](Documentation/Validation-revue-2026-10-23.md) documente les nouveaux parcours de validation, de filtrage et de conservation des projets, avec captures et résultats Xcode.
 
 ### Rejouer le pliage dans Device Hub
 
@@ -92,7 +105,8 @@ xcrun simctl io booted screenshot --display 3 /tmp/Parallele-ouvert.png
 | Models.swift | Projet, repère et choix de présentation |
 | ProjectStore.swift | Images, persistance, duplication, suppression |
 | LibraryView.swift | Bibliothèque, recherche, import Photos |
-| ComparisonEditor.swift | Navigation, commandes, notes, sauvegarde, partage |
+| ReviewExample.swift | Exemple fictif avant/après et trois observations préremplies |
+| ComparisonEditor.swift | Navigation, commandes, revue des notes, sauvegarde, partage |
 | ComparisonCanvas.swift | Ajustement des images, balayage, zoom, repères, adaptation Duo |
 | ComparisonExporter.swift | Rendu de la fiche PNG |
 

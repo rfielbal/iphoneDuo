@@ -36,7 +36,6 @@ enum ComparisonExporter {
         let panelY: CGFloat = 298
         let ink = UIColor(red: 0.10, green: 0.12, blue: 0.15, alpha: 1)
         let muted = UIColor(red: 0.40, green: 0.43, blue: 0.48, alpha: 1)
-        let blue = UIColor(red: 0.06, green: 0.40, blue: 0.90, alpha: 1)
         let background = UIColor(red: 0.965, green: 0.969, blue: 0.978, alpha: 1)
 
         let titleAttributes = attributes(font: .systemFont(ofSize: 68, weight: .semibold), color: ink)
@@ -65,7 +64,8 @@ enum ComparisonExporter {
         }
         let notesHeight = notes.reduce(CGFloat(0)) { $0 + $1.height + 94 }
         let notesY = panelY + panelHeight + 110
-        let totalHeight = notesY + (notes.isEmpty ? 0 : 78 + notesHeight) + 112
+        let notesHeaderHeight: CGFloat = 112
+        let totalHeight = notesY + (notes.isEmpty ? 0 : notesHeaderHeight + notesHeight) + 112
         guard totalHeight <= 22_000 else { throw ComparisonExportError.tooMuchContent }
 
         let format = UIGraphicsImageRendererFormat()
@@ -110,7 +110,7 @@ enum ComparisonExporter {
                     let x = note.annotation.x.isFinite ? min(1, max(0, note.annotation.x)) : 0.5
                     let y = note.annotation.y.isFinite ? min(1, max(0, note.annotation.y)) : 0.5
                     let point = CGPoint(x: imageRect.minX + imageRect.width * x, y: imageRect.minY + imageRect.height * y)
-                    drawPin(note.number, center: point, color: blue, context: context)
+                    drawPin(note.number, center: point, color: statusColor(note.annotation.status), context: context)
                 }
             }
 
@@ -119,11 +119,19 @@ enum ComparisonExporter {
                     at: CGPoint(x: margin, y: notesY),
                     withAttributes: attributes(font: .systemFont(ofSize: 36, weight: .semibold), color: ink)
                 )
-                var y = notesY + 78
+                let summary = "\(project.pendingAnnotationCount) à corriger · "
+                    + "\(project.validatedAnnotationCount) validé\(project.validatedAnnotationCount > 1 ? "s" : "")"
+                (summary as NSString).draw(
+                    at: CGPoint(x: margin, y: notesY + 52), withAttributes: metaAttributes
+                )
+                var y = notesY + notesHeaderHeight
                 for note in notes {
-                    drawPin(note.number, center: CGPoint(x: margin + 22, y: y + 20), color: blue, context: context, radius: 22)
-                    (note.annotation.side.title.uppercased() as NSString).draw(
-                        at: CGPoint(x: bodyX, y: y), withAttributes: labelAttributes
+                    let statusInk = statusColor(note.annotation.status)
+                    drawPin(note.number, center: CGPoint(x: margin + 22, y: y + 20), color: statusInk, context: context, radius: 22)
+                    let metadata = "\(note.annotation.side.title) · \(note.annotation.status.title)".uppercased()
+                    (metadata as NSString).draw(
+                        at: CGPoint(x: bodyX, y: y),
+                        withAttributes: attributes(font: .systemFont(ofSize: 24, weight: .semibold), color: statusInk)
                     )
                     (note.text as NSString).draw(
                         in: CGRect(x: bodyX, y: y + 42, width: bodyWidth, height: note.height + 8),
@@ -144,6 +152,15 @@ enum ComparisonExporter {
         let url = folder.appendingPathComponent("Parallele-\(UUID().uuidString).png")
         try data.write(to: url, options: .atomic)
         return url
+    }
+
+    /// The written status accompanies every marker, so color is never the only
+    /// way to distinguish a pending observation from a validated one.
+    private static func statusColor(_ status: AnnotationStatus) -> UIColor {
+        switch status {
+        case .toReview: UIColor(red: 0.06, green: 0.40, blue: 0.78, alpha: 1)
+        case .validated: UIColor(red: 0.17, green: 0.43, blue: 0.31, alpha: 1)
+        }
     }
 
     private static func attributes(font: UIFont, color: UIColor, lineSpacing: CGFloat = 0) -> [NSAttributedString.Key: Any] {

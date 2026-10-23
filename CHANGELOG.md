@@ -4,6 +4,14 @@ Ce journal décrit les évolutions de Parallèle. Les commits conservent le dét
 
 ## À paraître
 
+### 23 octobre 2026
+
+- Ajout de **Essayer une revue** dans la bibliothèque : un exemple d’interface fictive indépendant, créé à la demande avec trois observations, sans remplacer les projets existants.
+- Accès direct à **Revue** depuis la barre de l’éditeur, à la place de **Options > Annotations** : filtres, avancement et retour au repère dans l’image. Les observations peuvent être validées puis rouvertes.
+- Sauvegarde et duplication des statuts **À corriger** et **Validé**. Les anciennes annotations restent lisibles et prennent le statut **À corriger** par défaut.
+- Ajout des états écrits et du bilan de la revue dans les exports PNG ; affichage de l’avancement dans la bibliothèque.
+- Mise à jour du guide et de l’aide : les copies d’images enregistrées sont limitées à **2 500 pixels sur leur grand côté**, sans modifier les originaux.
+
 ### 21 octobre 2026
 
 - Correction des commandes de comparaison qui chevauchaient la zone de pliure en position partiellement ouverte : elles restent désormais dans le panneau droit lorsque la division verticale est active.

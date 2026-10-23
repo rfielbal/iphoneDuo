@@ -188,7 +188,7 @@ final class ProjectStore {
         let newID = try create(title: "\(original.title) — copie", before: before, after: after)
         guard var copy = project(id: newID) else { throw ProjectStoreError.missingProject }
         copy.annotations = original.annotations.map {
-            ImageAnnotation(x: $0.x, y: $0.y, text: $0.text, side: $0.side)
+            ImageAnnotation(x: $0.x, y: $0.y, text: $0.text, side: $0.side, status: $0.status)
         }
         copy.split = original.split
         copy.mode = original.mode

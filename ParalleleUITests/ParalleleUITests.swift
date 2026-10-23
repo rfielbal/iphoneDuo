@@ -203,6 +203,100 @@ final class ParalleleUITests: XCTestCase {
         XCTAssertEqual(app.buttons.matching(identifier: "demoProject").count, 1)
     }
 
+    func testReviewStatusFiltersAndSurvivesRelaunch() throws {
+        createReviewExample()
+        element("showAnnotations").tap()
+        assertReviewRows([0, 1, 2])
+        XCTAssertEqual(element("annotationReviewSummary").label, "2 à corriger · 1 validé")
+
+        selectAnnotationFilter("À corriger")
+        assertReviewRows([0, 1])
+        element("annotationRow-0").tap()
+        waitForDisappearance(element("annotationFilter"), message: "Choisir une note doit fermer la liste.")
+        assertAnnotationStatus("À corriger")
+        element("toggleAnnotationStatus").tap()
+        assertAnnotationStatus("Validé")
+
+        element("showAnnotations").tap()
+        // A status change must move the same note between filters, not create
+        // a duplicate or renumber the remaining observations.
+        assertReviewRows([1])
+        XCTAssertEqual(element("annotationReviewSummary").label, "1 à corriger · 2 validés")
+        selectAnnotationFilter("Validé")
+        assertReviewRows([0, 2])
+        attachScreenshot(named: "Revue — deux observations validées")
+        element("closeAnnotations").tap()
+        element("backToLibrary").tap()
+        XCTAssertTrue(reviewExampleCard.waitForExistence(timeout: 5))
+
+        app.terminate()
+        app.launchArguments = launchArguments
+        app.launch()
+        XCTAssertTrue(reviewExampleCard.waitForExistence(timeout: 15))
+        reviewExampleCard.tap()
+        XCTAssertTrue(element("comparisonCanvas").waitForExistence(timeout: 10))
+        element("showAnnotations").tap()
+        assertReviewRows([0, 1, 2])
+        selectAnnotationFilter("Validé")
+        assertReviewRows([0, 2])
+        element("annotationRow-0").tap()
+        assertAnnotationStatus("Validé")
+
+        // Validation remains reversible after loading the saved project.
+        element("toggleAnnotationStatus").tap()
+        assertAnnotationStatus("À corriger")
+        element("showAnnotations").tap()
+        assertReviewRows([2])
+        selectAnnotationFilter("À corriger")
+        assertReviewRows([0, 1])
+        selectAnnotationFilter("Toutes")
+        assertReviewRows([0, 1, 2])
+        attachScreenshot(named: "Revue — état relu et correction réouverte")
+    }
+
+    func testReviewExampleCreatesSeparateProjectWithoutPhotoImport() throws {
+        let original = element("demoProject")
+        let originalTitle = original.label
+        let originalValue = original.value as? String
+        XCTAssertFalse(reviewExampleCard.exists, "L’exemple doit être créé à la demande.")
+
+        createReviewExample()
+        XCTAssertFalse(app.scrollViews["photosView_content_scroll_view"].exists,
+                       "L’exemple embarqué doit s’ouvrir sans sélectionner de photos personnelles.")
+        XCTAssertFalse(element("projectTitle").exists,
+                       "L’exemple ne doit pas passer par le formulaire d’import.")
+        element("showAnnotations").tap()
+        assertReviewRows([0, 1, 2])
+        XCTAssertEqual(element("annotationReviewSummary").label, "2 à corriger · 1 validé")
+        element("closeAnnotations").tap()
+        element("backToLibrary").tap()
+        XCTAssertTrue(reviewExampleCard.waitForExistence(timeout: 5))
+
+        // Search also works when the existing card falls below the viewport.
+        // The first-card identifier changes when the new project is inserted.
+        let search = app.searchFields.firstMatch
+        if !search.exists {
+            let openSearch = app.buttons["Rechercher"]
+            XCTAssertTrue(openSearch.waitForExistence(timeout: 5))
+            openSearch.tap()
+        }
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText(originalTitle)
+        let preserved = app.buttons.matching(NSPredicate(format: "label == %@", originalTitle)).firstMatch
+        XCTAssertTrue(preserved.waitForExistence(timeout: 5),
+                      "Créer l’exemple doit conserver la comparaison déjà présente.")
+        XCTAssertEqual(preserved.value as? String, originalValue,
+                       "La comparaison existante doit conserver son nombre d’annotations.")
+        preserved.tap()
+        XCTAssertTrue(element("comparisonCanvas").waitForExistence(timeout: 10))
+        element("showAnnotations").tap()
+        XCTAssertTrue(element("annotationFilter").waitForExistence(timeout: 5))
+        XCTAssertFalse(element("annotationRow-0").exists,
+                       "Les trois notes de l’exemple ne doivent pas être ajoutées à l’ancien projet.")
+        attachScreenshot(named: "Revue — comparaison initiale conservée")
+    }
+
     /// Run this method alone with TEST_RUNNER_PARALLELE_FOLD_TEST=1.
     /// xcodebuild removes TEST_RUNNER_ when forwarding the variable to this runner.
     /// Prepare Device Hub in Closed, then follow the READY_ signals. Only an
@@ -529,6 +623,66 @@ final class ParalleleUITests: XCTestCase {
 
     private func foldLog(_ message: String) {
         FileHandle.standardOutput.write(Data("[PARALLELE_FOLD] \(message)\n".utf8))
+    }
+
+    private var reviewExampleCard: XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label == %@", "Revue d’interface — Atelier")).firstMatch
+    }
+
+    private func createReviewExample() {
+        let example = element("tryReviewExample")
+        XCTAssertTrue(example.waitForExistence(timeout: 5))
+        example.tap()
+        XCTAssertTrue(element("comparisonCanvas").waitForExistence(timeout: 15),
+                      "L’exemple embarqué doit créer puis ouvrir sa propre comparaison.")
+        XCTAssertTrue(app.navigationBars["Revue d’interface — Atelier"].exists)
+    }
+
+    private func selectAnnotationFilter(_ title: String) {
+        let filter = element("annotationFilter")
+        XCTAssertTrue(filter.waitForExistence(timeout: 5))
+        let choice = filter.buttons[title]
+        XCTAssertTrue(choice.waitForExistence(timeout: 5), "Le filtre doit proposer \(title).")
+        choice.tap()
+    }
+
+    private func assertReviewRows(_ visibleIndices: Set<Int>, file: StaticString = #filePath, line: UInt = #line) {
+        let filter = element("annotationFilter")
+        XCTAssertTrue(filter.waitForExistence(timeout: 5), file: file, line: line)
+        let list = app.collectionViews.firstMatch
+        XCTAssertTrue(list.waitForExistence(timeout: 5), file: file, line: line)
+        var observedIndices = Set<Int>()
+        // SwiftUI List only exposes materialized cells. Traverse this known
+        // three-note fixture, including the rows below the compact viewport,
+        // rather than treating an offscreen row as removed by the filter.
+        for step in 0..<3 {
+            let rows = list.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "annotationRow-"))
+                .allElementsBoundByIndex
+            for row in rows {
+                if let index = Int(row.identifier.dropFirst("annotationRow-".count)) {
+                    observedIndices.insert(index)
+                }
+            }
+            if step < 2 { list.swipeUp() }
+        }
+        // Leave the filter and first row available for the next interaction.
+        for _ in 0..<3 {
+            if filter.isHittable { break }
+            list.swipeDown()
+        }
+        XCTAssertTrue(filter.isHittable, file: file, line: line)
+        XCTAssertEqual(observedIndices, visibleIndices,
+                       "Le filtre doit afficher uniquement les repères \(visibleIndices.sorted()).",
+                       file: file, line: line)
+    }
+
+    private func assertAnnotationStatus(_ title: String, file: StaticString = #filePath, line: UInt = #line) {
+        let status = element("annotationStatus")
+        let matches = NSPredicate(format: "exists == true AND label == %@", title)
+        let result = XCTWaiter.wait(
+            for: [XCTNSPredicateExpectation(predicate: matches, object: status)], timeout: 5
+        )
+        XCTAssertEqual(result, .completed, "Le repère sélectionné doit être \(title).", file: file, line: line)
     }
 
     private func openDemo() {

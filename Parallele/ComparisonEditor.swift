@@ -12,6 +12,7 @@ struct ComparisonEditor: View {
     @State private var editingNote: AnnotationDraft?
     @State private var selectedNote: ImageAnnotation?
     @State private var showNotes = false
+    @State private var noteFilter: AnnotationStatus?
     @State private var error: String?
     @State private var exportItem: ExportItem?
     @State private var exporting = false
@@ -68,6 +69,13 @@ struct ComparisonEditor: View {
                     .accessibilityIdentifier("backToLibrary")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button { showNotes = true } label: {
+                        Label("Revue", systemImage: "checklist")
+                    }
+                    .accessibilityLabel("Revue des annotations")
+                    .accessibilityIdentifier("showAnnotations")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(action: export) {
                         Label("Exporter", systemImage: "square.and.arrow.up")
                     }
@@ -76,9 +84,6 @@ struct ComparisonEditor: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Button { showNotes = true } label: {
-                            Label("Annotations (\(project.annotations.count))", systemImage: "text.bubble")
-                        }
                         Button {
                             project.zoom = 1; pan = .zero; project.split = 0.5
                         } label: { Label("Réinitialiser la vue", systemImage: "arrow.counterclockwise") }
@@ -127,7 +132,7 @@ struct ComparisonEditor: View {
         }
         .sheet(isPresented: $showNotes) {
             notesList
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
         }
         .sheet(item: $exportItem) { item in
             ShareSheet(items: [item.url])
@@ -212,9 +217,25 @@ struct ComparisonEditor: View {
                 Button { selectedNote = nil } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary) }
                     .accessibilityLabel("Fermer le repère")
             }
+            Label(note.status.title, systemImage: note.status.systemImage)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(note.status == .validated ? Color.green : Color.secondary)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(note.status.title)
+                .accessibilityIdentifier("annotationStatus")
             Text(note.text).font(.subheadline).lineLimit(5)
-            Button("Modifier") { editingNote = AnnotationDraft(note: note) }
-                .font(.subheadline.weight(.medium))
+            HStack {
+                Button { toggleStatus(note) } label: {
+                    Label(note.status == .validated ? "Rouvrir" : "Valider",
+                          systemImage: note.status == .validated ? "arrow.uturn.backward" : "checkmark")
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityLabel(note.status == .validated ? "Remettre à corriger" : "Marquer comme validé")
+                .accessibilityIdentifier("toggleAnnotationStatus")
+                Button("Modifier") { editingNote = AnnotationDraft(note: note) }
+                    .buttonStyle(.bordered)
+            }
+            .font(.subheadline.weight(.medium))
         }
         .padding(18)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
@@ -224,22 +245,63 @@ struct ComparisonEditor: View {
     private var notesList: some View {
         NavigationStack {
             List {
+                Section {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(reviewSummary)
+                            .font(.headline)
+                            .accessibilityIdentifier("annotationReviewSummary")
+                        if !project.annotations.isEmpty {
+                            ProgressView(value: Double(project.validatedAnnotationCount),
+                                         total: Double(project.annotations.count))
+                                .tint(.green)
+                                .accessibilityLabel("Avancement de la revue")
+                                .accessibilityValue("\(project.validatedAnnotationCount) sur \(project.annotations.count) observations validées")
+                        }
+                        Picker("Afficher", selection: $noteFilter) {
+                            Text("Toutes").tag(AnnotationStatus?.none)
+                            Text("À corriger").tag(AnnotationStatus?.some(.toReview))
+                            Text("Validé").tag(AnnotationStatus?.some(.validated))
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("annotationFilter")
+                    }
+                    .padding(.vertical, 6)
+                }
                 if project.annotations.isEmpty {
                     ContentUnavailableView("Aucun repère", systemImage: "text.bubble",
                                            description: Text("Ajoutez un repère en touchant un détail de l’image."))
+                } else if filteredNotes.isEmpty {
+                    ContentUnavailableView(noteFilter == .validated ? "Aucune observation validée" : "Tout est validé",
+                                           systemImage: noteFilter == .validated ? "checkmark.circle" : "checkmark.circle.fill",
+                                           description: Text(noteFilter == .validated ? "Validez un repère après avoir vérifié ce détail." : "Il ne reste aucune observation à corriger."))
+                        .accessibilityIdentifier("emptyAnnotationFilter")
                 }
-                ForEach(Array(project.annotations.enumerated()), id: \.element.id) { index, note in
+                ForEach(filteredNotes, id: \.element.id) { index, note in
                     Button {
                         showNotes = false
-                        selectedNote = note
+                        reveal(note)
                     } label: {
                         HStack(alignment: .top, spacing: 12) {
-                            Text("\(index + 1)").fontWeight(.bold).foregroundStyle(.blue)
+                            Text("\(index + 1)").fontWeight(.bold)
+                                .foregroundStyle(note.status == .validated ? Color.green : Color.blue)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(note.text).foregroundStyle(.primary)
-                                Text(note.side == .before ? "Original" : "Retouche").font(.caption).foregroundStyle(.secondary)
+                                Label("\(note.side == .before ? "Original" : "Retouche") · \(note.status.title)",
+                                      systemImage: note.status.systemImage)
+                                    .font(.caption).foregroundStyle(.secondary)
                             }
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
                         }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("annotationRow-\(index)")
+                    .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                        Button { toggleStatus(note) } label: {
+                            Label(note.status == .validated ? "Rouvrir" : "Valider",
+                                  systemImage: note.status == .validated ? "arrow.uturn.backward" : "checkmark")
+                        }
+                        .tint(note.status == .validated ? .gray : .green)
                     }
                     .swipeActions {
                         Button("Supprimer", role: .destructive) {
@@ -250,13 +312,45 @@ struct ComparisonEditor: View {
                     }
                 }
             }
-            .navigationTitle("Annotations").navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Revue").navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button { showNotes = false } label: { Label("Terminé", systemImage: "checkmark") }
+                        .accessibilityIdentifier("closeAnnotations")
                 }
             }
         }
+    }
+
+    private var filteredNotes: [(offset: Int, element: ImageAnnotation)] {
+        Array(project.annotations.enumerated()).filter { noteFilter == nil || $0.element.status == noteFilter }
+    }
+
+    private var reviewSummary: String {
+        let validated = project.validatedAnnotationCount
+        return "\(project.pendingAnnotationCount) à corriger · \(validated) validé\(validated > 1 ? "s" : "")"
+    }
+
+    private func toggleStatus(_ note: ImageAnnotation) {
+        guard let index = project.annotations.firstIndex(where: { $0.id == note.id }) else { return }
+        project.annotations[index].status = note.status == .validated ? .toReview : .validated
+        if selectedNote?.id == note.id { selectedNote = project.annotations[index] }
+        _ = persist()
+    }
+
+    private func reveal(_ note: ImageAnnotation) {
+        // A review row must lead back to a visible point even if the user had
+        // zoomed elsewhere or hidden this image behind the swipe divider.
+        project.zoom = 1
+        pan = .zero
+        if (note.side == .before && note.x >= 0.98) || (note.side == .after && note.x <= 0.02) {
+            // The divider keeps a small drag margin. Use both images when that
+            // margin would hide a point at the outer edge of its image.
+            project.mode = .sideBySide
+        }
+        project.split = note.side == .before ? min(0.98, max(0.5, note.x + 0.08)) : max(0.02, min(0.5, note.x - 0.08))
+        isPlacing = false
+        selectedNote = note
     }
 
     private func placeAnnotation(side: ImageSide, point: CGPoint) {
@@ -294,12 +388,14 @@ private struct AnnotationForm: View {
     let draft: AnnotationDraft
     let onSave: (ImageAnnotation) -> Void
     @State private var text: String
+    @State private var status: AnnotationStatus
     @FocusState private var focused: Bool
 
     init(draft: AnnotationDraft, onSave: @escaping (ImageAnnotation) -> Void) {
         self.draft = draft
         self.onSave = onSave
         _text = State(initialValue: draft.note.text)
+        _status = State(initialValue: draft.note.status)
     }
 
     var body: some View {
@@ -309,6 +405,15 @@ private struct AnnotationForm: View {
                     TextField("Qu’est-ce qui change ici ?", text: $text, axis: .vertical)
                         .lineLimit(4...8).focused($focused).accessibilityIdentifier("annotationText")
                         .onChange(of: text) { _, newValue in if newValue.count > 500 { text = String(newValue.prefix(500)) } }
+                }
+                Section("État de la revue") {
+                    Picker("État", selection: $status) {
+                        ForEach(AnnotationStatus.allCases) { value in
+                            Label(value.title, systemImage: value.systemImage).tag(value)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("annotationStatusPicker")
                 }
                 Section { Text("Le repère reste attaché à ce détail quand la fenêtre change de taille.").font(.footnote).foregroundStyle(.secondary) }
             }
@@ -321,6 +426,7 @@ private struct AnnotationForm: View {
                     Button {
                         var note = draft.note
                         note.text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                        note.status = status
                         onSave(note); dismiss()
                     } label: { Label("Enregistrer", systemImage: "checkmark") }
                     .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)

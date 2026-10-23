@@ -18,6 +18,7 @@ struct LibraryView: View {
     @State private var showingRename = false
     @State private var pendingDeletion: ComparisonProject?
     @State private var showingDeletion = false
+    @State private var creatingExample = false
 
     private var matchingProjects: [ComparisonProject] {
         store.projects
@@ -111,16 +112,20 @@ struct LibraryView: View {
             ContentUnavailableView {
                 Label("Deux images. Un autre regard.", systemImage: "rectangle.on.rectangle")
             } description: {
-                Text("Importez un original et une retouche pour explorer ce qui a changé.")
+                Text("Comparez deux versions d’une image ou d’une interface, puis suivez vos observations.")
             } actions: {
                 Button("Créer une comparaison") { showingImport = true }
                     .buttonStyle(.glassProminent)
+                reviewExampleButton
             }
         } else if matchingProjects.isEmpty {
             ContentUnavailableView.search(text: search)
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    if search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        reviewExampleButton
+                    }
                     HStack(alignment: .firstTextBaseline) {
                         Text("Votre regard, côte à côte.")
                             .font(.subheadline)
@@ -188,10 +193,12 @@ struct LibraryView: View {
                     }
                     Spacer(minLength: 0)
                     if !project.annotations.isEmpty {
-                        Label("\(project.annotations.count)", systemImage: "text.bubble")
+                        Label(project.pendingAnnotationCount == 0 ? "Revue validée" : "\(project.pendingAnnotationCount) à corriger",
+                              systemImage: project.pendingAnnotationCount == 0 ? "checkmark.circle.fill" : "checklist")
                             .font(.caption.monospacedDigit())
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(project.pendingAnnotationCount == 0 ? Color.green : Color.secondary)
                             .padding(.top, 3)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .padding(.horizontal, 2)
@@ -200,7 +207,7 @@ struct LibraryView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(project.title)
-        .accessibilityValue("\(project.annotations.count) annotations")
+        .accessibilityValue("\(project.annotations.count) annotations, \(project.pendingAnnotationCount) à corriger, \(project.validatedAnnotationCount) validées")
         .accessibilityHint("Ouvre la comparaison. Des actions supplémentaires sont disponibles.")
         .accessibilityIdentifier(project.id == matchingProjects.first?.id ? "demoProject" : "projectCard-\(project.id.uuidString)")
         .contextMenu {
@@ -219,6 +226,50 @@ struct LibraryView: View {
                 pendingDeletion = project
                 showingDeletion = true
             }
+        }
+    }
+
+    private var reviewExampleButton: some View {
+        Button(action: createReviewExample) {
+            HStack(spacing: 14) {
+                Image(systemName: "rectangle.on.rectangle")
+                    .font(.title2).foregroundStyle(.blue)
+                    .frame(width: 40, height: 40)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Essayer une revue").font(.headline).foregroundStyle(.primary)
+                    Text("Une interface fictive, trois observations à explorer.")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 0)
+                if creatingExample {
+                    ProgressView()
+                } else {
+                    Image(systemName: "arrow.up.right").font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.blue)
+                }
+            }
+            .padding(18)
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20))
+            .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.primary.opacity(0.06), lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
+        .disabled(creatingExample)
+        .accessibilityIdentifier("tryReviewExample")
+        .accessibilityHint("Crée une comparaison d’exemple indépendante et ouvre ses trois observations.")
+    }
+
+    private func createReviewExample() {
+        guard !creatingExample else { return }
+        creatingExample = true
+        Task { @MainActor in
+            defer { creatingExample = false }
+            await Task.yield()
+            do {
+                let project = try store.createReviewExample()
+                onOpen(project.id)
+            } catch { store.errorMessage = error.localizedDescription }
         }
     }
 
@@ -567,7 +618,7 @@ private struct LibraryAboutView: View {
                     Label("Import limité aux photos sélectionnées", systemImage: "photo")
                     Label("Comparaisons enregistrées sur cet appareil", systemImage: "internaldrive")
                     Label("Aucun compte requis", systemImage: "person.crop.circle.badge.checkmark")
-                    Text("Les photos originales ne sont jamais modifiées. Les copies importées sont adaptées à une définition maximale de 4 096 pixels pour conserver une navigation fluide.")
+                    Text("Les photos originales ne sont jamais modifiées. Les copies enregistrées sont adaptées à une définition maximale de 2 500 pixels pour conserver une navigation fluide.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

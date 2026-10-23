@@ -29,25 +29,63 @@ enum ComparisonMode: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum AnnotationStatus: String, Codable, CaseIterable, Identifiable {
+    case toReview, validated
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .toReview: "À corriger"
+        case .validated: "Validé"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .toReview: "circle"
+        case .validated: "checkmark.circle.fill"
+        }
+    }
+}
+
 struct ImageAnnotation: Identifiable, Codable, Equatable {
     var id: UUID
     var x: Double
     var y: Double
     var text: String
     var side: ImageSide
+    var status: AnnotationStatus
 
     init(
         id: UUID = UUID(),
         x: Double,
         y: Double,
         text: String,
-        side: ImageSide
+        side: ImageSide,
+        status: AnnotationStatus = .toReview
     ) {
         self.id = id
         self.x = x
         self.y = y
         self.text = text
         self.side = side
+        self.status = status
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, x, y, text, side, status
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        x = try container.decode(Double.self, forKey: .x)
+        y = try container.decode(Double.self, forKey: .y)
+        text = try container.decode(String.self, forKey: .text)
+        side = try container.decode(ImageSide.self, forKey: .side)
+        // Libraries saved before review statuses were introduced remain readable.
+        status = try container.decodeIfPresent(AnnotationStatus.self, forKey: .status) ?? .toReview
     }
 }
 
@@ -64,6 +102,14 @@ struct ComparisonProject: Identifiable, Codable, Equatable {
     var zoom: Double
     var panX: Double? = nil
     var panY: Double? = nil
+
+    var pendingAnnotationCount: Int {
+        annotations.filter { $0.status == .toReview }.count
+    }
+
+    var validatedAnnotationCount: Int {
+        annotations.filter { $0.status == .validated }.count
+    }
 
     init(
         id: UUID = UUID(),
